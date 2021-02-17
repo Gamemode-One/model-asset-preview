@@ -43,7 +43,11 @@ async function onAddedModel(event: Event) {
 	const geometry = JSON.parse(await file.text())
 	if (!geometry['minecraft:geometry']) {
 		// Old model format
-		const modelData: any = Object.values(geometry)[0]
+		const modelData: any = Object.values(geometry).find(
+			(val) => typeof val !== 'string'
+		)
+		if (!modelData) return
+
 		const transformedModel: any = {
 			description: {},
 			bones: [],
@@ -53,6 +57,7 @@ async function onAddedModel(event: Event) {
 		transformedModel.description.texture_height = modelData.textureheight
 		transformedModel.bones = modelData.bones
 		model.value = transformedModel
+		console.log(transformedModel, modelData)
 	} else {
 		// New model format
 
