@@ -3,15 +3,17 @@
 	<h1>model-asset-preview</h1>
 
 	<div v-if="!shouldRender">
-		<!-- <h2>Quality:</h2>
+		<h2>Quality:</h2>
 		<select v-model="quality">
 			<option value="1">1x</option>
+			<option value="2">2x</option>
+			<option value="3">3x</option>
 			<option value="4">4x</option>
-			<option value="6">6x</option>
+			<!-- <option value="6">6x</option>
 			<option value="8">8x</option>
 			<option value="9">9x</option>
-			<option value="10">10x</option>
-		</select> -->
+			<option value="10">10x</option> -->
+		</select>
 		<h2>Model:</h2>
 		<input type="file" @change="onAddedModel" />
 		<h2>Texture:</h2>
