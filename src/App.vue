@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, provide } from 'vue'
+import { ref, computed, provide } from 'vue'
 import ModelViewer from './components/ModelViewer.vue'
 
 const model = ref<any | undefined>(undefined)
