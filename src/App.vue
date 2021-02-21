@@ -1,37 +1,51 @@
 <template>
-	<img alt="Vue logo" src="./assets/gm1.webp" />
-	<h1>model-asset-preview</h1>
-
-	<div v-if="!shouldRender">
-		<h2>Quality:</h2>
-		<select v-model="quality">
-			<option value="1">1x</option>
-			<option value="2">2x</option>
-			<option value="3">3x</option>
-			<option value="4">4x</option>
-			<!-- <option value="6">6x</option>
+	<div class="d-flex">
+		<img alt="Vue logo" src="./assets/gm1.webp" />
+		<h1>model-asset-preview</h1>
+	</div>
+	<div class="d-flex" v-if="!startRender">
+		<div class="control">
+			<h2>Quality:</h2>
+			<select v-model="quality">
+				<option value="1">1x</option>
+				<option value="2">2x</option>
+				<option value="3">3x</option>
+				<option value="4">4x</option>
+				<!-- <option value="6">6x</option>
 			<option value="8">8x</option>
 			<option value="9">9x</option>
 			<option value="10">10x</option> -->
-		</select>
-		<h2>Model:</h2>
-		<input type="file" @change="onAddedModel" />
-		<h2>Texture:</h2>
-		<input type="file" @change="onAddedTexture" />
-	</div>
-	<p v-else>Loading...</p>
+			</select>
+		</div>
 
-	<ModelViewer
-		v-if="shouldRender"
-		:model="model"
-		:texture="texture"
-		:quality="qualityNumber"
-		@ready="onReady"
-	/>
+		<div class="control">
+			<h2>Model:</h2>
+			<input type="file" @change="onAddedModel" />
+		</div>
+
+		<div class="control">
+			<h2>Texture:</h2>
+			<input type="file" @change="onAddedTexture" />
+		</div>
+
+		<button class="render-button" @click="render" :disabled="!shouldRender">
+			Render
+		</button>
+
+		<ModelViewer
+			v-if="shouldRender"
+			:startRender="startRender"
+			:model="model"
+			:texture="texture"
+			:quality="qualityNumber"
+			@ready="onReady"
+		/>
+	</div>
+	<p style="text-align: center" v-else>Loading...</p>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect, provide } from 'vue'
 import ModelViewer from './components/ModelViewer.vue'
 
 const model = ref<any | undefined>(undefined)
@@ -88,9 +102,17 @@ const qualityNumber = computed(() => Number(quality.value))
 function onReady() {
 	model.value = undefined
 	texture.value = undefined
+	startRender.value = false
 }
 
 const shouldRender = computed(() => !!model.value && !!texture.value)
+
+const startRender = ref(false)
+provide('startRender', startRender)
+
+function render() {
+	startRender.value = true
+}
 </script>
 
 <style>
@@ -98,11 +120,27 @@ const shouldRender = computed(() => !!model.value && !!texture.value)
 	font-family: Avenir, Helvetica, Arial, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	text-align: center;
 	color: #2c3e50;
 	margin-top: 60px;
 }
 img {
 	height: 100px;
+}
+
+.render-button {
+	display: inline-block;
+	margin: 24px 0;
+}
+.d-flex {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.control {
+	display: flex;
+	align-items: center;
+}
+h2 {
+	margin-right: 12px;
 }
 </style>
