@@ -49,6 +49,7 @@ const props = defineProps({
 })
 const emit = defineEmit(['ready'])
 const startRender = inject<Ref<boolean>>('startRender') ?? ref(true)
+const zoom = inject<Ref<number>>('zoom') ?? ref(1.5)
 
 const width = computed(() => 1000 * props.quality)
 const height = computed(() => 1000 * props.quality)
@@ -70,12 +71,38 @@ onMounted(() => {
 		}
 	)
 	viewer.onResize()
-	viewer.positionCamera()
+	viewer.positionCamera(zoom.value)
 	setTimeout(async () => {
 		viewer.requestRendering(true)
 	}, 10)
 
 	bones.value = [...viewer.getModel().getBoneMap().entries()]
+})
+
+watchEffect(() => {
+	if (startRender.value || !canvas.value) return
+
+	viewer = new StandaloneModelViewer(
+		canvas.value!,
+		props.model!,
+		props.texture!,
+		{
+			width: 500,
+			height: 500,
+			antialias: true,
+		}
+	)
+	viewer.onResize()
+	viewer.positionCamera(zoom.value)
+
+	const boneMap = viewer.getModel().getBoneMap()
+	for (const [boneName, bone] of bones.value) {
+		if (!bone.visible) toggleBone(boneMap.get(boneName)!, false)
+	}
+
+	setTimeout(async () => {
+		viewer.requestRendering(true)
+	}, 10)
 })
 
 watchEffect(() => {
@@ -101,7 +128,7 @@ watchEffect(() => {
 
 	setTimeout(async () => {
 		viewer.requestRendering(true)
-		await viewer.generatePreview(1.5, props.quality * 2)
+		await viewer.generatePreview(zoom.value, props.quality * 2)
 		emit('ready')
 	}, 10)
 })

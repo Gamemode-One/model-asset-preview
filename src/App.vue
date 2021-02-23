@@ -17,6 +17,10 @@
 			<option value="10">10x</option> -->
 			</select>
 		</div>
+		<div class="control">
+			<h2>Zoom:</h2>
+			<input type="number" v-model="zoom" />
+		</div>
 
 		<div class="control">
 			<h2>Model:</h2>
@@ -28,9 +32,23 @@
 			<input type="file" @change="onAddedTexture" />
 		</div>
 
-		<button class="render-button" @click="render" :disabled="!shouldRender">
-			Render
-		</button>
+		<div class="control">
+			<button
+				class="render-button"
+				style="margin-right: 12px"
+				@click="reset"
+				:disabled="!shouldRender"
+			>
+				Reset
+			</button>
+			<button
+				class="render-button"
+				@click="render"
+				:disabled="!shouldRender"
+			>
+				Render
+			</button>
+		</div>
 
 		<ModelViewer
 			v-if="shouldRender"
@@ -98,10 +116,11 @@ async function onAddedTexture(event: Event) {
 
 const quality = ref('4')
 const qualityNumber = computed(() => Number(quality.value))
+const zoom = ref('1.5')
+const zoomNumber = computed(() => Number(zoom.value))
+provide('zoom', zoomNumber)
 
 function onReady() {
-	model.value = undefined
-	texture.value = undefined
 	startRender.value = false
 }
 
@@ -112,6 +131,10 @@ provide('startRender', startRender)
 
 function render() {
 	startRender.value = true
+}
+function reset() {
+	if (confirm('Are you sure that you want to reset the current preview?'))
+		location.reload()
 }
 </script>
 
