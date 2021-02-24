@@ -11,15 +11,20 @@
 				<option value="2">2x</option>
 				<option value="3">3x</option>
 				<option value="4">4x</option>
-				<!-- <option value="6">6x</option>
-			<option value="8">8x</option>
-			<option value="9">9x</option>
-			<option value="10">10x</option> -->
+				<option value="6">6x</option>
+				<option value="8">8x</option>
+				<option value="9">9x</option>
+				<option value="10">10x</option>
 			</select>
 		</div>
 		<div class="control">
 			<h2>Zoom:</h2>
 			<input type="number" v-model="zoom" />
+		</div>
+
+		<div class="control">
+			<h2>Background:</h2>
+			<input type="text" v-model="backgroundColor" />
 		</div>
 
 		<div class="control">
@@ -89,7 +94,6 @@ async function onAddedModel(event: Event) {
 		transformedModel.description.texture_height = modelData.textureheight
 		transformedModel.bones = modelData.bones
 		model.value = transformedModel
-		console.log(transformedModel, modelData)
 	} else {
 		// New model format
 
@@ -119,6 +123,12 @@ const qualityNumber = computed(() => Number(quality.value))
 const zoom = ref('1.5')
 const zoomNumber = computed(() => Number(zoom.value))
 provide('zoom', zoomNumber)
+
+const backgroundColor = ref('#121212')
+const backgroundColorNumber = computed(() =>
+	Number(backgroundColor.value.replace('#', '0x'))
+)
+provide('backgroundColor', backgroundColorNumber)
 
 function onReady() {
 	startRender.value = false

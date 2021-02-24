@@ -17,6 +17,7 @@ import { IGeoSchema } from 'bridge-model-viewer/dist/Schema/Model'
 
 export interface IOptions {
 	antialias?: boolean
+	backgroundColor?: number
 	width?: number
 	height?: number
 }
@@ -24,7 +25,7 @@ export interface IOptions {
 export class StandaloneModelViewer {
 	protected renderer: WebGLRenderer
 	protected model: Model
-	protected scene: Scene
+	public readonly scene: Scene
 	protected camera: PerspectiveCamera
 	protected renderingRequested = false
 	protected controls: OrbitControls
@@ -51,13 +52,21 @@ export class StandaloneModelViewer {
 		this.controls = new OrbitControls(this.camera, canvasElement)
 		this.scene = new Scene()
 		this.scene.add(new AmbientLight(0xffffff))
-		this.scene.background = new Color(0x121212)
+		this.scene.background = new Color(options.backgroundColor ?? 0x121212)
 		this.model = new Model(modelData, texturePath)
 		this.scene.add(this.model.getModel())
 
 		window.addEventListener('resize', () => this.onResize(true))
 		this.controls.addEventListener('change', () => this.requestRendering())
 		this.onResize(false)
+	}
+
+	updateModel(modelData: any, texturePath: string) {
+		const oldModel = this.model
+		this.model = new Model(modelData, texturePath)
+		this.scene.add(this.model.getModel())
+
+		this.scene.remove(oldModel.getModel())
 	}
 
 	protected get width() {
@@ -134,7 +143,7 @@ export class StandaloneModelViewer {
 		this.camera.updateProjectionMatrix()
 	}
 
-	async generatePreview(scale = 1.5, res = 10) {
+	async generatePreview(scale = 1.5, res = 10, color = 0x121212) {
 		const canvas = new OffscreenCanvas(1400 * res, 600 * res)
 		const ctx = canvas.getContext('2d')
 		if (!ctx) return
@@ -174,7 +183,7 @@ export class StandaloneModelViewer {
 			...urls.map((url) => this.loadImage(url)),
 		])
 
-		ctx.fillStyle = '#121212'
+		ctx.fillStyle = '#' + color.toString(16)
 		ctx.fillRect(0, 0, canvas.width, canvas.height)
 		ctx.drawImage(
 			modelRenders[0],

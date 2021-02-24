@@ -37,10 +37,11 @@ import {
 	computed,
 	watchEffect,
 	inject,
+	watch,
 } from 'vue'
 import type { Ref } from 'vue'
 import { StandaloneModelViewer } from './ModelViewer'
-import { Group, Object3D } from 'three'
+import { Group, Object3D, Color } from 'three'
 
 const props = defineProps({
 	texture: String,
@@ -50,9 +51,10 @@ const props = defineProps({
 const emit = defineEmit(['ready'])
 const startRender = inject<Ref<boolean>>('startRender') ?? ref(true)
 const zoom = inject<Ref<number>>('zoom') ?? ref(1.5)
+const backgroundColor = inject<Ref<number>>('backgroundColor') ?? ref(1.5)
 
-const width = computed(() => 1000 * props.quality)
-const height = computed(() => 1000 * props.quality)
+const width = computed(() => 500 * props.quality)
+const height = computed(() => 500 * props.quality)
 
 const canvas: Ref<HTMLCanvasElement | undefined> = ref(undefined)
 let viewer: StandaloneModelViewer
@@ -68,6 +70,7 @@ onMounted(() => {
 			width: 500,
 			height: 500,
 			antialias: true,
+			backgroundColor: backgroundColor.value,
 		}
 	)
 	viewer.onResize()
@@ -79,19 +82,11 @@ onMounted(() => {
 	bones.value = [...viewer.getModel().getBoneMap().entries()]
 })
 
-watchEffect(() => {
+watch([props, zoom, backgroundColor], () => {
 	if (startRender.value || !canvas.value) return
 
-	viewer = new StandaloneModelViewer(
-		canvas.value!,
-		props.model!,
-		props.texture!,
-		{
-			width: 500,
-			height: 500,
-			antialias: true,
-		}
-	)
+	viewer.scene.background = new Color(backgroundColor.value ?? 0x121212)
+	viewer.updateModel(props.model!, props.texture!)
 	viewer.onResize()
 	viewer.positionCamera(zoom.value)
 
@@ -99,6 +94,7 @@ watchEffect(() => {
 	for (const [boneName, bone] of bones.value) {
 		if (!bone.visible) toggleBone(boneMap.get(boneName)!, false)
 	}
+	bones.value = [...viewer.getModel().getBoneMap().entries()]
 
 	setTimeout(async () => {
 		viewer.requestRendering(true)
@@ -115,6 +111,7 @@ watchEffect(() => {
 			width: width.value,
 			height: height.value,
 			antialias: true,
+			backgroundColor: backgroundColor.value,
 		}
 	)
 
@@ -128,7 +125,11 @@ watchEffect(() => {
 
 	setTimeout(async () => {
 		viewer.requestRendering(true)
-		await viewer.generatePreview(zoom.value, props.quality * 2)
+		await viewer.generatePreview(
+			zoom.value,
+			props.quality,
+			backgroundColor.value
+		)
 		emit('ready')
 	}, 10)
 })
