@@ -68,7 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide } from 'vue'
+import { ref, computed, provide, watchEffect } from 'vue'
+import { set, get } from 'idb-keyval'
 import ModelViewer from './components/ModelViewer.vue'
 
 const model = ref<any | undefined>(undefined)
@@ -129,6 +130,13 @@ const backgroundColorNumber = computed(() =>
 	Number(backgroundColor.value.replace('#', '0x'))
 )
 provide('backgroundColor', backgroundColorNumber)
+;(async () => {
+	backgroundColor.value = (await get('backgroundColor')) ?? '#121212'
+	watchEffect(async () => {
+		console.log(backgroundColor.value)
+		await set('backgroundColor', backgroundColor.value)
+	})
+})()
 
 function onReady() {
 	startRender.value = false
